@@ -17,7 +17,7 @@ Link Github: https://github.com/viniciuspg/DISSERTACAO_IFSC_2021/blob/main/SCRIP
 Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO DE ÁREAS INVASÃO POR Pinus sp. EM AMBIENTES DE RESTINGA:
 Uma abordagem utilizando a série histórica do projeto MapBiomas e classificação GEOBIA de imagens captadas por drones
 
-PRODUTO: SCRIPT 2 - EXPORTAR MOSAICO SENTINEL DOS MELHORES PIXELS (SEM NUVENS) PARA GOOGLE DRIVE 
+PRODUTO: SCRIPT 2 - EXPORTAR MOSAICO SENTINEL DOS MELHORES PIXELS (SEM NUVENS) PARA O GOOGLE DRIVE 
  
  MODO DE UTILIZAÇÃO:
  1º PASSO: desenhe um retângulo (variável geometry) envolvendo sua área de interesse (AOI)
