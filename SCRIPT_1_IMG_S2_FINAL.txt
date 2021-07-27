@@ -1,0 +1,90 @@
+/*
+INSTITUTO FEDERAL DE SANTA CATARINA - IFSC
+Campus Florianópolis
+Departamento Acadêmico de Saúde e Serviços
+Mestrado Profissional em Clima e Ambiente
+Autor: Vinicius Paiva Gonçalves
+Orientador: Dr. Eduardo Augusto Werneck Ribeiro
+Data: 27/07/2021
+
+Este script é um produto integrante da 
+Dissertação apresentada ao Mestrado Profissional em Clima e Ambiente
+do Campus Florianópolis do Instituto Federal de Santa Catarina para a 
+obtenção do diploma de Mestre em Clima e Ambiente.
+Link: https://code.earthengine.google.com/4ba572a0303107f925bbb78fa8081946
+
+Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO DE ÁREAS INVASÃO POR Pinus sp. EM AMBIENTES DE RESTINGA:
+Uma abordagem utilizando a série histórica do projeto MapBiomas e classificação GEOBIA de imagens captadas por drones
+
+PRODUTO: SCRIPT 1 - EXPORTAR MOSAICO SENTINEL PARA GOOGLE DRIVE 
+
+MODO DE UTILIZAÇÃO:
+ 1º PASSO: desenhe um retângulo (variável geometry) envolvendo sua área de interesse (AOI)
+ no mapa, usando as ferramentas de geometria;
+
+ 2º PASSO: Definir coleção Sentinel e intervalo de datas;
+ 
+ 3º PASSO: Definir nomes para a pasta arquivo que será exportado.
+
+ Importar imagem da coleção Sentinel INSTRUMENTO MSI (Multi Spectral Instrument):
+ - Para nível de processamento L1-C: Reflectância no topo da atmosfera (TOA): usar 'COPERNICUS/S2'
+       - Disponível a partir de 23/06/2015 (mais informações em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2)
+ - Para nível de processamento L2-A: Reflectância na base da atmosfera ou de superfície (BOA): usar 'COPERNICUS/S2_SR'
+      - Disponível a partir de 28/03/2017 (mais informaçõees em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR)
+*/
+var S2 = ee.ImageCollection('COPERNICUS/S2_SR');
+
+
+//CENTRALIZANDO MAPA NA REGIÃO DE INTERESSE
+Map.centerObject(geometry, 10);
+
+//Filgrar por cena S2
+S2 = S2.filterBounds(geometry);
+print(S2);
+
+//Filtrar por data 
+S2 = S2.filterDate("2019-10-12" , "2020-11-12")
+print(S2);
+
+//Localizar a primeira imagem disponível
+var image = ee.Image(S2.first());
+
+Map.addLayer(image,{min:0,max:3000,bands:"B12,B11,B4"}, "Sentinel_B12_11_4");
+Map.addLayer(image,{min:0,max:3000,bands:"B4,B3,B2"}, "Sentinel_B4_3_2");
+Map.addLayer(image,{min:0,max:3000,bands:"B8,B4,B3"}, "Sentinel_B8_4_3");
+Map.addLayer(image,{min:0,max:3000,bands:"B4,B8,B3"}, "Sentinel_B4_8_3");
+
+// Seleccionar composição ou bandas desejadas para exportar:
+//        EXEMPLOS:
+//             ('B12', 'B11', 'B4') --> COR VERDADEIRA RGB CLARA (20M)
+//             ('B4', 'B3', 'B2') --> COR VERDADEIRA RGB ESCURA (10M)
+//             ('B8', 'B4', 'B3') --> FALSA COR VERMELHA (10M)
+//             ('B4', 'B8', 'B3') --> FALSA COR VERDE (10M)
+//   - Bandas disponíveis para TOA (VER https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2#bands)
+//   - Bandas disponíveis para BOA (VER https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR#bands)
+image = image.select('B8', 'B4', 'B3')
+
+// Exportar a imagem para o Google Drive, especificando escala e a região
+//    - em description, digitar o nome do arquivo
+//    - em scale, definir o tamanho do pixel de saída, em metros (varia entre 10  e 60 metros, conforme a banda)
+//    - em region, definir a extensão:
+//         - geometry --> para exportar a área do retângulo desenhado pelo usuário, ou;
+//         - image --> para exportar toda a cena
+//BANDAS_PARA_COPIAR_E_COLAR NO_NOME:
+//            _B12_11_4_COR_VERD_RGB_CL_
+//            _B4_3_2_COR_VERD_RGB_ESC_
+//            _B8_4_3_FALSA_COR_VERM_
+//            _B4_8_3-FALSA_COR_VERD_
+Export.image.toDrive({
+  image: image,
+  description: 'S2_BOA_ILHA_SC_2020-10-01_B843_10m_geometry',
+  scale: 10,
+  maxPixels: 1e9,
+  region: geometry,
+  folder: 'GEE',
+});
+
+// FONTES:
+//    - Curso udemy Kate Alison Machine Learning in GIS: Understand the Theory and Practice - Seção 6, Aula 21, disponível em <https://www.udemy.com/share/102NFGB0Qfd19bRH0=/>, acesso em 25 out. 2020.
+//    - Forum Geographic Information Systems Stack Exchange, disponível em <https://gis.stackexchange.com/questions/300344/gee-exported-bands-must-have-compatible-data-types-found-inconsistent-types>, acesso em 25 out. 2020.
+//    - Ajuda do GEE <https://developers.google.com/earth-engine/guides/exporting:> , acesso em 25 out. 2020.
