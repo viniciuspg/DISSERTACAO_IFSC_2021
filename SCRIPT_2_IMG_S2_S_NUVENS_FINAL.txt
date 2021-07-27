@@ -31,7 +31,7 @@ PRODUTO: SCRIPT 2 - EXPORTAR MOSAICO SENTINEL DOS MELHORES PIXELS (SEM NUVENS) P
  - Para nível de processamento L1-C: Reflectância no topo da atmosfera (TOA): usar 'COPERNICUS/S2'
        - Disponível a partir de 23/06/2015 (mais informações em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2)
  - Para nível de processamento L2-A: Reflectância na base da atmosfera ou de superfície (BOA): usar 'COPERNICUS/S2_SR'
-      - Disponível a partir de 28/03/2017 (mais informaçõees em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR)
+      - Disponível a partir de 28/03/2017 (mais informações em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR)
 */
 
 
