@@ -14,8 +14,7 @@ obtenção do diploma de Mestre em Clima e Ambiente.
 Link: https://code.earthengine.google.com/c8a524d19eee5f153eb441bab6e605fa
 Link Github: https://github.com/viniciuspg/DISSERTACAO_IFSC_2021/blob/main/SCRIPT_2_IMG_S2_S_NUVENS_FINAL.txt
 
-Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO DE ÁREAS INVASÃO POR Pinus sp. EM AMBIENTES DE RESTINGA:
-Uma abordagem utilizando a série histórica do projeto MapBiomas e classificação GEOBIA de imagens captadas por RPAS (drone)
+Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO DE ÁREAS INVASÃO POR Pinus sp. EM AMBIENTES DE RESTINGA: Uma abordagem utilizando a série histórica do projeto MapBiomas e classificação GEOBIA de imagens captadas por RPAS (drone)
 
 PRODUTO: SCRIPT 2 - EXPORTAR MOSAICO SENTINEL DOS MELHORES PIXELS (SEM NUVENS) PARA O GOOGLE DRIVE 
  
