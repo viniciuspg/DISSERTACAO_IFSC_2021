@@ -1,91 +1,169 @@
-/*
-INSTITUTO FEDERAL DE SANTA CATARINA - IFSC
-Campus Florianópolis
-Departamento Acadêmico de Saúde e Serviços
-Mestrado Profissional em Clima e Ambiente
-Autor: Vinicius Paiva Gonçalves
-Orientador: Dr. Eduardo Augusto Werneck Ribeiro
-Data: 27/07/2021
+/* 
+  CURSO: Potencialidades do Google Earth Engine como ferramenta de análise geoespacial no Iphan. 
+         - Docente UFPB. Prof. Dr. Cristiano Almeida < eng.cnalmeida@gmail.com>
+         - Discente UFPB: Filipe Carvalho Lemos <filipe.carvalho@academico.ufpb.br>
+         - Analista Iphan: Vinicius Paiva Gonçalves <vinicius.goncalves@iphan.gov.br>
+  
+              Este script é um produto integrante da 
+              Dissertação apresentada ao Mestrado Profissional em Clima e Ambiente
+              do Campus Florianópolis do Instituto Federal de Santa Catarina para a 
+              obtenção do diploma de Mestre em Clima e Ambiente.
+              Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO
+              DE ÁREAS INVADIDAS POR Pinus sp. EM AMBIENTES DE RESTINGA:
+              Uma abordagem utilizando a série histórica do projeto MapBiomas 
+              e o método GEOBIA para classificação de imagens captadas por RPAS (drone)
 
-Este script é um produto integrante da 
-Dissertação apresentada ao Mestrado Profissional em Clima e Ambiente
-do Campus Florianópolis do Instituto Federal de Santa Catarina para a 
-obtenção do diploma de Mestre em Clima e Ambiente.
-Link: https://code.earthengine.google.com/c8a524d19eee5f153eb441bab6e605fa
-Link Github: https://github.com/viniciuspg/DISSERTACAO_IFSC_2021/blob/main/SCRIPT_2_IMG_S2_S_NUVENS_FINAL.txt
-
-Título da dissertação:  UTILIZAÇÃO DE SENSORIAMENTO REMOTO PARA MAPEAMENTO DE ÁREAS INVADIDAS POR Pinus sp. EM AMBIENTES DE RESTINGA:
-Uma abordagem utilizando a série histórica do projeto MapBiomas e o método GEOBIA para classificação de imagens captadas por RPAS (drone)
-
-
-PRODUTO: SCRIPT 2 - EXPORTAR MOSAICO SENTINEL DOS MELHORES PIXELS (SEM NUVENS) PARA O GOOGLE DRIVE 
+  
+  
+  SCRIPT 1 - EXPORTAR IMAGENS SENTINEL PARA O GOOGLE DRIVE COM GOOGLE EARTH ENGINE
+  LINK GEE: https://code.earthengine.google.com/d08f7e81c980c182ec98f7765566f265
+  Criado em: 09/Ago/2021 
+  Modificado em: 12/Ago/2021
+  
+  
+MODO DE UTILIZAÇÃO:
+ 1º Clicar em Run
+ 2º Ative o Satélite e Insira as coordenadas do PONTO DE INTERESSE no formato (latitude, longitude);
+ 3º Desenhe um retângulo envolvendo a área de interesse diretamente;
+           no mapa, usando as ferramentas de geometria (variável geometry);
+ 4º Desligue geometria do retângulo;
+ 5º Crie uma nova camada em Geometry Imports--> "new layer";
+ 6º Coloque um marcador de alfinete sobre o ponto criado;
+ 7º Defina a coleção¹ Sentinel (TOA ou BOA);
+ 8º Informe o intervalo de datas para pesquisa: data inicial e data final ou atual (dia anterior);
+      - *Rodar (Run) e verificar a data da imagem utilizando o Inspector
+      - *Pesquisar imagens em intervalos de 5 dias
+ 9º Defina a composição de bandas para exportar
+ 10º Defina os nomes para a pasta e para o arquivo que será exportado.
+      - *Rodar (Run) para gerar a tarefa "Task"
+      - *Rodar a Task (Run)
  
- MODO DE UTILIZAÇÃO:
- 1º PASSO: desenhe um retângulo (variável geometry) envolvendo sua área de interesse (AOI)
- no mapa, usando as ferramentas de geometria;
+ ** Para reiniciar o processo em outro local, delete as geometrias 1 e 2  na parte suerior da tela;
 
- 2º PASSO: Definir coleção Sentinel, intervalo de datas e porcentagem de nuvens dos pixels;
- 
- 3º PASSO: Definir nomes para a pasta arquivo que será exportado.
-
- Importar imagem da coleção Sentinel INSTRUMENTO MSI (Multi Spectral Instrument):
+ ¹Informações para definição da coleção Sentinel INSTRUMENTO MSI (Multi Spectral Instrument) no passo 3:
  - Para nível de processamento L1-C: Reflectância no topo da atmosfera (TOA): usar 'COPERNICUS/S2'
        - Disponível a partir de 23/06/2015 (mais informações em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2)
  - Para nível de processamento L2-A: Reflectância na base da atmosfera ou de superfície (BOA): usar 'COPERNICUS/S2_SR'
       - Disponível a partir de 28/03/2017 (mais informações em https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR)
 */
+//++++++++++++++++++++++++++++++++++++++++++++++++ INÍCIO +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// 1º CLIQUE EM RUN
+
+// 2º ATIVE O SATÉLITE E INSIRA COORDENADAS NO CONSOLE E CIQUE EM CRIAR GEOMETRIA
+
+/* EXEMPLOS:
+-2.783463,-59.886621 --> Nova Jerusalém - Manaus-AM
+4.430627,-61.129434 --> 'Pedra de Makunaima' - Pacaraima-RR
+*/
+
+var lbl_coordinates = ui.Label('Digite as coordenadas (lat,long):');
+print(lbl_coordinates);
+
+var txt_coords = ui.Textbox({
+  value: ''
+});
+print(txt_coords);
+
+var create_geo = function(){
+  var coords = ee.String(txt_coords.getValue());
+  var pos = ee.Number(coords.index(','));
+  var long = ee.Number.parse(coords.slice(0,pos));
+  var len = coords.length();
+  var lat =  ee.Number.parse(coords.slice(pos.add(1),len));
+  var point = ee.Geometry.Point(lat,long);
+  var sitio = ee.FeatureCollection(point);
+  print(point);
+  Map.centerObject(point, 15);
+  Map.addLayer(sitio.draw({color: '#00ffff', pointRadius: 5}), {}, 'Ponto');
+  print('Geometria criada');
+};
+
+var btn = ui.Button('Criar geometria');
+btn.onClick(function(){
+  create_geo();
+});
+print(btn);
 
 
-var collection = ee.ImageCollection('COPERNICUS/S2_SR') // busca todos os pixels das imagens Sentinel 2
-  .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20)) // filtra pixels com menos de than X% de nuvens, a partir dos metadados
-  .filterDate('2019-02-05','2021-07-26') // escolhe apenas pixels entre o intervalo de datas aqu idefinido
-  .filterBounds(geometry); // recorta imagem dentro da AOI.
-  
-print(collection); // gera uma lista JSON (JavaScript Object Notation) das imagens (e seus metadados) cujos filtros são mostrados no COONSOLE na janela ao lado direito
-  
-//// até agora isso foi para localizar todas as imagens da coleção que atendem aos critérios - as mais recentes no topo. Para obter um belo mosaico de aspecto misto, 
-// tente algumas das ferramentas para 'reduzir' estes para um pixel (ou faixas de pixels em uma pilha de camadas). 
+// 3º DESENHE UM RETÂNGULO NO MAPA, ENVOLVENDO O ENTORNO DO PONTO DE INTERESSE
+// centralizando o mapa na região de intereresse (níve de zoom recomendado entre 10 a 16)
+Map.centerObject(geometry, 16); 
 
-var medianpixels = collection.median(); // Encontra o valor mediano de todos os pixels que satisfazem os critérios. 
-
-var medianpixelsclipped = medianpixels.clip(geometry).divide(10000); // isso corta o resultado para que ele se encaixe perfeitamente em na AOI
-                                                                  // e se divide de modo que valores fiquem entre 0 e 1      
-
-//CENTRALIZANDO MAPA NA REGIÃO DE INTERESSE
-Map.centerObject(geometry, 10);
+// 4º PARA MELHOR VISUALIZAÇÃO, DESLIGUE A GEOMETRIA DO RETÂNGULO;
+// 5º CRIE UMA NOVA CAMADA EM GEOMETRY IMPORTS --> NEW LAYER;
+// 6º COLOQUE UM MARCADOR DE ALFINETE SOBRE O PONTO CRIADO;
 
 
-// Visualizar o mosaico como uma imagem colorida natural.
-// Seleccionar composição ou bandas desejadas,entre colchetes usando aspas simples, separado por vírgula.
+//7º DEFINA A COLEÇÃO SENTINEL:
+
+/*
+TOA ('COPERNICUS/S2') 23/06/2015 a 28/03/2017;
+BOA ('COPERNICUS/S2_SR') após 28/03/2017;
+*/
+
+var S2 = ee.ImageCollection('COPERNICUS/S2_SR');
+
+//Filtrar por cena S2
+S2 = S2.filterBounds(geometry);
+print(S2);
+
+//8º INFORME O INTERVALO DE DATAS (data inicial e data final/atual)
+//      - *Rodar (Run) e verificar a data da imagem utilizando o Inspector
+//      - *Pesquisar imagens em intervalos de 5 dias
+
+//Filtrar por data 
+S2 = S2.filterDate("2021-07-27" , "2021-08-11");
+print(S2);
+
+/*ESPAÇO PARA REGISTRAR AS DATAS RELEVANTES:
+
+Digite aqui suas anotações:
+NOME DO LOCAL
+    AAAA-MM-DD-descrição
+ 
+*/
+
+//Localizar a primeira imagem disponível
+var image = ee.Image(S2.first());
+Map.addLayer(image,{min:0,max:3000,bands:"B8,B4,B3"}, "Sentinel_B8_4_3");
+Map.addLayer(image,{min:0,max:3000,bands:"B4,B3,B2"}, "Sentinel_B4_3_2");
+
+//9º DEFINA A COMPOSIÇÃO DE BANDAS
+// Seleccionar composição ou bandas desejadas para exportar:
 //        EXEMPLOS:
-//             ['B12', 'B11', 'B4'] --> COR VERDADEIRA RGB CLARA (20M)
-//             ['B4', 'B3', 'B2'] --> COR VERDADEIRA RGB ESCURA (10M)
-//             ['B8', 'B4', 'B3'] --> FALSA COR VERMELHA (10M)
-//             ['B4', 'B8', 'B3'] --> FALSA COR VERDE (10M)
+//             ('B4', 'B3', 'B2') --> COR VERDADEIRA RGB (10M)
+//             ('B8', 'B4', 'B3') --> FALSA COR VERMELHA (10M)
 //   - Bandas disponíveis para TOA (VER https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2#bands)
 //   - Bandas disponíveis para BOA (VER https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR#bands)
-Map.addLayer(medianpixelsclipped, {bands: ['B12', 'B11', 'B4'], min: 0, max: 1, gamma: 1.5}, 'Sentinel_2 mosaic_B12_B11_B4');
-Map.addLayer(medianpixelsclipped, {bands: ['B4', 'B3', 'B2'], min: 0, max: 1, gamma: 1.5}, 'Sentinel_2 mosaic_B4_B3_B2');
-Map.addLayer(medianpixelsclipped, {bands: ['B8', 'B4', 'B3'], min: 0, max: 1, gamma: 1.5}, 'Sentinel_2 mosaic_B8_B4_B3');
-Map.addLayer(medianpixelsclipped, {bands: ['B4', 'B8', 'B3'], min: 0, max: 1, gamma: 1.5}, 'Sentinel_2 mosaic_B4_B8_B3');
+image = image.select('B4', 'B3', 'B2')
 
-// Exportar o mosaico o para seu Google Drive como uma imagem tiff para uso no QGIS
-// Exportar a imagem, especificando a composição de bandas, escala e a região
-//    - em image, especificar a composição de bandas entre parênteses, cada banda entre aspas, separadas por vírgula, p.ex para mesclar 3 bandas ("B8", "B4", "B3") ; para mesclar todas as bandas B, usar ("B.+")
+//6º DEFINIR OS NOMES PARA A PASTA E ARQUIVO
+// Exportar a imagem para o Google Drive, especificando escala e a região
 //    - em description, digitar o nome do arquivo
 //    - em scale, definir o tamanho do pixel de saída, em metros (varia entre 10  e 60 metros, conforme a banda)
 //    - em region, definir a extensão:
 //         - geometry --> para exportar a área do retângulo desenhado pelo usuário, ou;
+//         - image --> para exportar toda a cena
+//BANDAS_PARA_COPIAR_E_COLAR NO_NOME:
+//            _B432_COR_VERDADEIRA_RGB_
+//            _B843_FALSA_COR_VERMELHA_
 Export.image.toDrive({
-  image: medianpixelsclipped.select("B8", "B4", "B3"),
-  description: 'MOSAICOS2_tbOA_lugar_aaaa_mm_dd_ATE_aaaa_mm_dd_bbb',
+  image: image,
+  description: 'S2BOA_sitio_pedra_de_makunaima_B432_2021-01-18-INTERVENCAO',
   scale: 10,
-  maxPixels: 1e13,
+  maxPixels: 1e9,
   region: geometry,
-  folder: 'GEE',
+  folder: 'GEE_imagens',
 });
 
+// ANTES DE EXPORTAR: SEMPRE RODAR APÓS DEFINIR O NOME DO ARQUIVO!
+//      - *Rodar (Run) para gerar a tarefa "Task"
+//      - *Rodar a Task (Run)
+
+//++++++++++++++++++++++++++++++++++++++++++++++++ FINAL +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // FONTES CONSULTADAS:
-//    - Canal EAMENA Project. Vídeo: 25_How to mosaic Sentinel 2 images with Google Earth Engine - disponível em <https://www.youtube.com/watch?v=YYFv3j2tE5U&t=4s>, acesso em 25 out. 2020.
+//    - Disciplina Prof. Dr. Cristiano Almeida (UFPB); 
+//    - Curso udemy Kate Alison Machine Learning in GIS: Understand the Theory and Practice - Seção 6, Aula 21, disponível em <https://www.udemy.com/share/102NFGB0Qfd19bRH0=/>, acesso em 25 out. 2020.
 //    - Forum Geographic Information Systems Stack Exchange, disponível em <https://gis.stackexchange.com/questions/300344/gee-exported-bands-must-have-compatible-data-types-found-inconsistent-types>, acesso em 25 out. 2020.
 //    - Ajuda do GEE <https://developers.google.com/earth-engine/guides/exporting:> , acesso em 25 out. 2020.
